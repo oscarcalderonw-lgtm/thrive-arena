@@ -42,13 +42,14 @@ body{
 }
 
 #app{
-  height:100%;
+  height:100%; height:100dvh;
   display:flex;
   flex-direction:column;
-  max-width:560px;
+  max-width:430px;
   margin:0 auto;
   background:var(--bg);
   position:relative;
+  overflow:hidden;
 }
 
 /* ===== TOP BAR ===== */
@@ -86,7 +87,7 @@ body{
   flex:1;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  padding:14px 14px calc(90px + var(--safe-bottom)) 14px;
+  padding:14px 14px calc(90px + env(safe-area-inset-bottom, 0px)) 14px;
 }
 #main::-webkit-scrollbar{display:none;}
 
@@ -391,6 +392,46 @@ body{
 .carta .extra{margin-top:18px; font-size:14px; color:var(--text); background:var(--surface); border-radius:14px; padding:12px 14px; max-width:380px; box-shadow:var(--shadow);}
 .carta-actions{display:flex; gap:10px; justify-content:center; margin-top:22px; flex-wrap:wrap;}
 
+/* ===== ETIQUETA DE IDENTIDAD (Niño / Adolescente / Adulto / Actual) ===== */
+.identity-tag-block{
+  border-top:1px solid var(--surface2); padding-top:14px; margin-top:14px; width:100%; max-width:380px;
+}
+.identity-tag-row{
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:8px;
+}
+.identity-tag-row button{
+  border:1px solid var(--surface2); background:var(--surface2); border-radius:20px;
+  padding:6px 14px; font-size:13px; font-weight:600; color:var(--text);
+}
+.identity-tag-row button:active{opacity:0.7;}
+
+/* ===== SIGUIENTE JUGADA ===== */
+.next-play{
+  margin-top:8px; padding:7px 10px; background:rgba(255,255,255,0.45); border-radius:10px;
+  font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px;
+}
+.pulse-card.black .next-play{background:rgba(255,255,255,0.1);}
+
+/* ===== EJERCICIO RÁPIDO ===== */
+.exercise-quick-row{
+  display:flex; gap:8px; margin-bottom:10px; align-items:stretch;
+}
+.exercise-quick-btn{
+  flex:1; display:flex; align-items:center; gap:10px;
+  background:var(--surface); border:none; border-radius:var(--radius);
+  padding:12px 14px; box-shadow:var(--shadow); text-align:left; cursor:pointer;
+  font-size:20px;
+}
+.exercise-quick-btn:active{transform:scale(0.985);}
+.eqb-title{font-size:14px; font-weight:700; color:var(--text);}
+.eqb-meta{font-size:12px; color:var(--text2); margin-top:2px;}
+.exercise-hist-btn{
+  background:var(--surface); border:none; border-radius:var(--radius);
+  padding:12px 14px; box-shadow:var(--shadow); font-size:13px; font-weight:700;
+  color:var(--blue); white-space:nowrap; cursor:pointer;
+}
+.exercise-hist-btn:active{opacity:0.7;}
+
 /* ===== DETAIL OVERLAY (vista profunda de módulos) ===== */
 .detail-body{
   flex:1; overflow-y:auto; padding:14px 16px 30px 16px; -webkit-overflow-scrolling:touch;
@@ -412,18 +453,22 @@ body{
 
 /* ===== BOTTOM NAV ===== */
 #bottomnav{
-  position:absolute; bottom:0; left:0; right:0;
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px;
   background:var(--surface); border-top:1px solid var(--surface2);
-  display:flex; padding: 6px 4px calc(6px + var(--safe-bottom)) 4px;
-  overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  display:flex;
+  padding-bottom:env(safe-area-inset-bottom, 0px);
   z-index:60;
+  /* Extiende el fondo hasta el borde físico del iPhone */
+  box-shadow: 0 env(safe-area-inset-bottom, 0px) 0 0 var(--surface);
 }
 #bottomnav::-webkit-scrollbar{display:none;}
 #bottomnav button{
-  flex:0 0 auto; min-width:66px; background:none; border:none; display:flex; flex-direction:column;
-  align-items:center; gap:2px; padding:6px 8px; font-size:10px; font-weight:700; color:var(--text2);
+  flex:1; min-width:0; background:none; border:none; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:2px;
+  padding:8px 4px 6px 4px; font-size:10px; font-weight:700; color:var(--text2);
 }
-#bottomnav button .nicon{font-size:20px;}
+#bottomnav button .nicon{font-size:22px; display:block;}
 #bottomnav button.active{color:var(--blue);}
 
 /* ===== MENU SHEET (more tabs) ===== */
@@ -543,6 +588,7 @@ label.field-label{font-size:12px; font-weight:700; color:var(--text2); display:b
           <div>Dopamina<b id="home-dopamine">0%</b></div>
         </div>
         <div class="pulse-enemy" id="pulse-enemy" style="display:none;"></div>
+        <div class="next-play" id="next-play" style="display:none;"></div>
       </div>
 
       <!-- Lugar activo y Sustancia activa: compactos, lado a lado -->
@@ -565,6 +611,18 @@ label.field-label{font-size:12px; font-weight:700; color:var(--text2); display:b
         <button class="big-btn" style="flex-direction:column; text-align:center; gap:6px;" onclick="openInnerFlow()"><span class="emoji">🌊</span> Me pasó algo por dentro</button>
         <button class="big-btn" style="flex-direction:column; text-align:center; gap:6px;" onclick="openPresenceFlow()"><span class="emoji">🦶</span> Entrené presencia</button>
         <button class="big-btn secondary" style="flex-direction:column; text-align:center; gap:6px;" onclick="openGoodMomentFlow()"><span class="emoji">🌟</span> Momento bueno</button>
+      </div>
+
+      <!-- Ejercicio rápido (visible y accesible) -->
+      <div class="exercise-quick-row">
+        <button class="exercise-quick-btn" onclick="openExerciseDirectly()">
+          <span>🏋️</span>
+          <div>
+            <div class="eqb-title">Registrar ejercicio</div>
+            <div class="eqb-meta" id="exercise-quick-meta">Toca para registrar</div>
+          </div>
+        </button>
+        <button class="exercise-hist-btn" onclick="goScreen('analysis'); setTimeout(()=>document.getElementById('analysis-exercise')?.scrollIntoView({behavior:'smooth'}),300)">📊 Historial</button>
       </div>
 
       <!-- ↓↓↓ A partir de aquí puede requerir scroll ↓↓↓ -->
@@ -685,6 +743,7 @@ label.field-label{font-size:12px; font-weight:700; color:var(--text2); display:b
         <button class="big-btn" onclick="openPresenceFlow()"><span class="emoji">🦶</span> Entrené presencia</button>
         <button class="big-btn secondary" onclick="openGoodMomentFlow()"><span class="emoji">🌟</span> Momento bueno</button>
       </div>
+      <button class="btn outline small" style="width:100%; margin-bottom:12px;" onclick="openManualRegister()">🕐 Registro manual (hora pasada)</button>
       <div class="section-label">📋 Historial de hoy (toca para ver, ✕ para borrar)</div>
       <div id="register-today-list"></div>
     </div>
@@ -780,6 +839,8 @@ label.field-label{font-size:12px; font-weight:700; color:var(--text2); display:b
       <div class="card" id="analysis-exercise"></div>
       <div class="section-label">Alcohol vs ejercicio</div>
       <div class="card" id="analysis-alcohol-exercise"></div>
+      <div class="section-label">🌫️ Análisis de Vector — ¿Hacia dónde va tu mente?</div>
+      <div class="card" id="analysis-vector"></div>
     </div>
 
     <!-- ============ CAMPAÑA ============ -->
@@ -905,21 +966,13 @@ label.field-label{font-size:12px; font-weight:700; color:var(--text2); display:b
 
   </div><!-- /main -->
 
-  <!-- ===== BOTTOM NAV (scroll horizontal) ===== -->
+  <!-- ===== BOTTOM NAV — 5 tabs fijos + Más ===== -->
   <div id="bottomnav">
     <button class="nav-btn active" data-screen="home" onclick="goScreen('home')"><span class="nicon">🏠</span>Arena</button>
     <button class="nav-btn" data-screen="register" onclick="goScreen('register')"><span class="nicon">✍️</span>Registrar</button>
     <button class="nav-btn" data-screen="training" onclick="goScreen('training')"><span class="nicon">🧘</span>Entrenar</button>
     <button class="nav-btn" data-screen="recovery" onclick="goScreen('recovery')"><span class="nicon">🛡️</span>Recuperación</button>
-    <button class="nav-btn" data-screen="dopamine" onclick="goScreen('dopamine')"><span class="nicon">⚡</span>Dopamina</button>
-    <button class="nav-btn" data-screen="game" onclick="goScreen('game')"><span class="nicon">🏆</span>Juego</button>
-    <button class="nav-btn" data-screen="library" onclick="goScreen('library')"><span class="nicon">📚</span>Biblioteca</button>
-    <button class="nav-btn" data-screen="analysis" onclick="goScreen('analysis')"><span class="nicon">📊</span>Análisis</button>
-    <button class="nav-btn" data-screen="campaign" onclick="goScreen('campaign')"><span class="nicon">🗺️</span>Campaña</button>
-    <button class="nav-btn" data-screen="records" onclick="goScreen('records')"><span class="nicon">🏅</span>Récords</button>
-    <button class="nav-btn" data-screen="learnings" onclick="goScreen('learnings')"><span class="nicon">📖</span>Aprendizajes</button>
-    <button class="nav-btn" data-screen="museum" onclick="goScreen('museum')"><span class="nicon">🏛️</span>Museo</button>
-    <button class="nav-btn" data-screen="config" onclick="goScreen('config')"><span class="nicon">⚙️</span>Config</button>
+    <button class="nav-btn" data-screen="menu" onclick="openMoreMenu()"><span class="nicon">⚙️</span>Más</button>
   </div>
 
 </div><!-- /app -->
@@ -1018,7 +1071,7 @@ label.field-label{font-size:12px; font-weight:700; color:var(--text2); display:b
 const STORAGE_KEY = 'thriveArenaState_v2';
 const BACKUP_KEY = 'thriveArenaState_v2_autobackup';
 const SCHEMA_VERSION = '2.0.0';
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.2.4';
 
 let state = null;
 
@@ -1520,6 +1573,158 @@ function showToast(msg){
 /* ============================================================
    MOTOR DE FÓRMULAS — sección 18 del documento maestro
    ============================================================ */
+
+/* ============================================================
+   CONVERSACIÓN POST-REGISTRO
+   Regla: si hay < 5 registros comparables → mensaje suave/generativo
+           si hay >= 5 → mostrar patrón real calculado desde events[]
+   Nunca inventar. Nunca afirmar sin datos.
+   ============================================================ */
+function generatePostRegisterConversation(ev){
+  if(!ev || !ev.type) return null;
+
+  // emociones que disparan la etiqueta de identidad
+  const EXCAVABLE = ['vergüenza','culpa','inseguridad','celos','envidia','comparación',
+                     'validación externa','humillación','miedo al rechazo'];
+
+  if(ev.type === 'inner_event'){
+    return _conversationForEmotion(ev, EXCAVABLE);
+  }
+  if(ev.type === 'substance'){
+    return _conversationForSubstance(ev);
+  }
+  if(ev.type === 'training'){
+    return _conversationForTraining(ev);
+  }
+  return null;
+}
+
+function _conversationForEmotion(ev, EXCAVABLE){
+  const emo = ev.payload.emotion;
+  const location = ev.location;
+  const MIN = 5;
+
+  // cuántas veces ha aparecido esta emoción en este lugar
+  const sameEmotionLocation = state.events.filter(e=>
+    e.type==='inner_event' && e.payload.emotion===emo && e.location===location && e.id!==ev.id
+  );
+
+  // cuántas veces esta emoción precedió una sustancia (dentro de 30 min)
+  const pairs = [];
+  for(const e of state.events){
+    if(e.type!=='inner_event' || e.payload.emotion!==emo || e.id===ev.id) continue;
+    const t0 = new Date(e.timestamp).getTime();
+    const following = state.events.find(s=>
+      s.type==='substance' &&
+      new Date(s.timestamp).getTime() > t0 &&
+      new Date(s.timestamp).getTime() <= t0 + 30*60*1000
+    );
+    if(following) pairs.push(following.payload.substance);
+  }
+
+  const isExcavable = EXCAVABLE.some(x=>emo.toLowerCase().includes(x.toLowerCase()));
+
+  // con datos suficientes → patrón real
+  if(sameEmotionLocation.length >= MIN){
+    return {
+      type: 'pattern',
+      text: `${emo} en ${location} ha aparecido ${sameEmotionLocation.length+1} veces. `+
+            (pairs.length >= 3
+              ? `En ${pairs.length} de esas ocasiones vino un consumo después.`
+              : `Hasta ahora no ha derivado en consumo consistente.`),
+      showIdentityTag: isExcavable
+    };
+  }
+  if(pairs.length >= 3){
+    const sub = _mostCommon(pairs);
+    return {
+      type: 'pattern',
+      text: `Cuando aparece ${emo}, ${pairs.length} veces de ${sameEmotionLocation.length+1} terminó en ${sub}.`,
+      showIdentityTag: isExcavable
+    };
+  }
+
+  // pocos datos → generativo, sin afirmar
+  const generative = {
+    'Ansiedad': 'Esto no es profecía. Es una alarma. Queda registrado.',
+    'Vacío': 'Esto no es falta de vida. Es falta de estímulo. Queda registrado.',
+    'Soledad': 'Esto no significa abandono. Significa necesidad de conexión real.',
+    'Incertidumbre': 'La incertidumbre no es peligro. Es información sin confirmar.',
+    'Vergüenza': 'Esto ataca identidad. Tu valor no depende de este momento.',
+    'Culpa': 'Esto pide reparación o cierre, no castigo.',
+    'Envidia': 'Esto muestra un deseo tuyo. No inferioridad.',
+    'Comparación': 'Estás viendo el escaparate de otro contra tu backstage.',
+    'Frustración': 'La frustración avisa que algo importa. No que hayas fallado.',
+    'Fatiga': 'No evalúes tu vida cansado.',
+  };
+  const msg = generative[emo] || `${emo} registrado. Con más datos empezaré a ver patrones.`;
+  return { type: 'generative', text: msg, showIdentityTag: isExcavable };
+}
+
+function _conversationForSubstance(ev){
+  const sub = ev.payload.substance;
+  const location = ev.location;
+  const allSameSub = state.events.filter(e=>e.type==='substance' && e.payload.substance===sub && e.id!==ev.id);
+  const MIN = 5;
+
+  // ¿qué emoción precedió esto más frecuentemente?
+  const precedingEmos = [];
+  for(const e of allSameSub){
+    const t0 = new Date(e.timestamp).getTime();
+    const before = state.events.filter(x=>
+      x.type==='inner_event' &&
+      new Date(x.timestamp).getTime() < t0 &&
+      new Date(x.timestamp).getTime() >= t0 - 30*60*1000
+    );
+    for(const b of before) precedingEmos.push(b.payload.emotion);
+  }
+
+  if(precedingEmos.length >= 3){
+    const top = _mostCommon(precedingEmos);
+    const count = precedingEmos.filter(x=>x===top).length;
+    return {
+      type: 'pattern',
+      text: `En ${count} de ${allSameSub.length} registros, ${top} apareció antes de ${_subName(sub)}. Puede no ser nicotina lo que buscas.`,
+      showIdentityTag: false
+    };
+  }
+  if(allSameSub.length >= MIN){
+    const byLocation = allSameSub.filter(e=>e.location===location).length;
+    if(byLocation > allSameSub.length * 0.6){
+      return { type: 'pattern', text: `${Math.round(byLocation/allSameSub.length*100)}% de tus registros de ${_subName(sub)} ocurren en ${location}.`, showIdentityTag: false };
+    }
+  }
+
+  return { type: 'generative', text: `${_subName(sub)} registrado. Con más datos veré patrones.`, showIdentityTag: false };
+}
+
+function _conversationForTraining(ev){
+  const target = ev.payload.target;
+  const reduction = ev.payload.reduction || 0;
+  const sameTarget = state.events.filter(e=>e.type==='training' && e.payload.target===target && e.id!==ev.id);
+  const avgReduction = sameTarget.length
+    ? sameTarget.reduce((s,e)=>s+(e.payload.reduction||0),0)/sameTarget.length
+    : 0;
+
+  if(sameTarget.length >= 3 && reduction > avgReduction){
+    return { type: 'pattern', text: `Tu mejor sesión de ${target} hasta ahora. Reducción de ${reduction} puntos, arriba del promedio (${avgReduction.toFixed(1)}).`, showIdentityTag: false };
+  }
+  if(sameTarget.length >= 3 && reduction > 0){
+    return { type: 'pattern', text: `Has entrenado ${target} ${sameTarget.length+1} veces. Promedio de reducción: ${avgReduction.toFixed(1)} puntos.`, showIdentityTag: false };
+  }
+  return { type: 'generative', text: `Toleraste ${target}. Eso se acumula.`, showIdentityTag: false };
+}
+
+function _mostCommon(arr){
+  const counts = {};
+  for(const x of arr) counts[x]=(counts[x]||0)+1;
+  return Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+}
+function _subName(key){
+  const sub = SUBSTANCES?.find(s=>s.key===key);
+  return sub ? sub.name : key;
+}
+
 
 /* ---------- mapeo de eventos a barras de tolerancia ---------- */
 function eventToleranceBar(ev){
@@ -2193,6 +2398,10 @@ function renderTopbar(){
 /* ---------- overlays ---------- */
 function openOverlay(id){
   document.getElementById(id).classList.add('active');
+  // si hay una etiqueta de identidad pendiente y acabamos de abrir la carta, mostrarla
+  if(id==='overlay-carta'){
+    setTimeout(()=>{ if(typeof maybeShowIdentityTag==='function') maybeShowIdentityTag(); }, 100);
+  }
 }
 function closeOverlay(id){
   document.getElementById(id).classList.remove('active');
@@ -2306,6 +2515,9 @@ function renderHome(){
   renderModuleRewards();
   renderModuleTimeline();
   renderModuleMentor();
+
+  // siguiente jugada
+  renderNextPlay();
 
   // último hallazgo
   document.getElementById('last-finding').textContent = getLastFinding();
@@ -2510,19 +2722,38 @@ function renderLocationDisplay(){
   if(metaEl) metaEl.textContent = 'hace '+timeSince(cur.since);
 }
 
+/* ---------- abrir ejercicio directamente desde Home ---------- */
+function openExerciseDirectly(){
+  state.runtime.flow = {type:'presence', step:1, data:{}};
+  document.getElementById('sheet-title').textContent = 'Registrar ejercicio';
+  renderExercisePresenceDetail();
+  openOverlay('overlay-sheet');
+}
+
 /* ---------- display grande: último ejercicio ---------- */
 function renderLastExerciseDisplay(){
   const el = document.getElementById('last-exercise-display');
-  if(!el) return;
+  const metaEl = document.getElementById('exercise-quick-meta');
   const exEvents = state.events.filter(e=>e.type==='presence_training' && e.payload.action==='ejercicio');
-  if(!exEvents.length){ el.style.display='none'; return; }
+
+  if(!exEvents.length){
+    if(el) el.style.display='none';
+    if(metaEl) metaEl.textContent = 'Sin registros aún';
+    return;
+  }
   const last = exEvents[exEvents.length-1];
   const feeling = EXERCISE_FEELINGS.find(f=>f.key===last.payload.feeling);
-  el.style.display='block';
-  el.innerHTML = `<div class="big-display-row">
-    <div class="big-display-current"><span class="emoji-lg">🏋️</span> ${last.payload.exerciseType||'Ejercicio'}${last.payload.durationMin?' · '+last.payload.durationMin+' min':''}</div>
-    <div class="big-display-meta">${feeling?feeling.emoji+' · ':''}hace ${timeSince(last.timestamp)}</div>
-  </div>`;
+
+  if(el){
+    el.style.display='block';
+    el.innerHTML = `<div class="big-display-row">
+      <div class="big-display-current"><span class="emoji-lg">🏋️</span> ${last.payload.exerciseType||'Ejercicio'}${last.payload.durationMin?' · '+last.payload.durationMin+' min':''}</div>
+      <div class="big-display-meta">${feeling?feeling.emoji+' · ':''}hace ${timeSince(last.timestamp)}</div>
+    </div>`;
+  }
+  if(metaEl){
+    metaEl.textContent = `Último: ${last.payload.exerciseType||'Ejercicio'}${last.payload.durationMin?' · '+last.payload.durationMin+' min':''} · hace ${timeSince(last.timestamp)}`;
+  }
 }
 
 /* ---------- display grande: última sustancia usada ---------- */
@@ -2743,6 +2974,41 @@ function renderMissions(){
   `).join('');
 }
 
+/* ---------- siguiente jugada ---------- */
+function renderNextPlay(){
+  const el = document.getElementById('next-play');
+  if(!el) return;
+  const cache = state.cache;
+  const dayId = state.runtime.dayId;
+  let play = null;
+
+  if((cache.xpToday||0) < -5 || (cache.loadToday||0) > 15){
+    play = '⚠️ Carga alta: mejor no abrir WhatsApp automático.';
+  } else if(cache.activeEnemies?.length){
+    const e = cache.activeEnemies[0];
+    play = `⚔️ Siguiente jugada: entrena ${e.name} ahora.`;
+  } else if((cache.dopamineScore||0) > 70){
+    play = '📵 Dopamina alta. 5 min sin pantalla cambia algo.';
+  } else if(new Date().getHours()>=18){
+    const hasEx = state.events.some(e=>e.dayId===dayId && e.type==='presence_training' && e.payload.action==='ejercicio');
+    if(!hasEx) play = '🏃 Sin ejercicio hoy. Una caminata corta cuenta.';
+  } else if((cache.recoveryTotal||0) < 15){
+    play = '🧘 Siguiente jugada: 90 segundos de incertidumbre.';
+  } else {
+    const lastSub = [...state.events].reverse().find(e=>e.type==='substance' && e.dayId===dayId);
+    if(lastSub){
+      const mins = Math.round((Date.now()-new Date(lastSub.timestamp).getTime())/60000);
+      if(mins < 30) play = `⏱️ Han pasado ${mins} min desde el último registro. Observa.`;
+    }
+  }
+  if(!play){
+    const pool = ['🌱 Sin enemigo activo. Buen momento para construir.','✨ Hoy conviene entrenar silencio.','🐕 Buen momento para caminar con Mika.','📚 Momento de aprender algo nuevo.'];
+    play = pool[dayId % pool.length];
+  }
+  el.style.display = 'flex';
+  el.textContent = play;
+}
+
 /* ---------- último hallazgo (motor de conclusiones simplificado) ---------- */
 function getLastFinding(){
   const findings = generateFindings();
@@ -2874,6 +3140,72 @@ function quickSubstance(key, name, emoji){
   }
 }
 
+/* ============================================================
+   REGISTRO MANUAL CON HORA PASADA
+   Permite registrar sustancias ocurridas horas antes sin
+   disparar alertas de frecuencia (ya pasó, es información).
+   ============================================================ */
+function openManualRegister(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  state.runtime.flow = {type:'manual', step:1, data:{}};
+  document.getElementById('sheet-title').textContent = '🕐 Registro manual';
+  const body = document.getElementById('sheet-body');
+  body.innerHTML = `
+    <div class="card-sub">¿A qué hora ocurrió?</div>
+    <input type="time" id="manual-time" value="${h}:${m}"
+      style="font-size:22px; font-weight:700; border:none; background:var(--surface2); border-radius:12px; padding:10px 16px; color:var(--text); width:100%; box-sizing:border-box; margin-bottom:14px;">
+    <div class="card-sub">¿Qué fue?</div>
+    <div class="choice-grid">
+      ${SUBSTANCES.map((s,i)=>`<button class="choice" onclick="addManualSubstance(${i})">${s.emoji}<br>${s.name}</button>`).join('')}
+    </div>
+    <button class="btn outline mt8" onclick="closeOverlay('overlay-sheet')">Cancelar</button>
+  `;
+  openOverlay('overlay-sheet');
+}
+
+function addManualSubstance(idx){
+  const sub = SUBSTANCES[idx];
+  if(!sub) return;
+  const timeVal = document.getElementById('manual-time')?.value || '';
+  // construir timestamp con la hora seleccionada de hoy
+  const today = new Date();
+  let ts;
+  if(timeVal){
+    const [hh,mm] = timeVal.split(':').map(Number);
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hh, mm, 0);
+    ts = d.toISOString();
+  } else {
+    ts = new Date().toISOString();
+  }
+  // registrar directamente en events[] con timestamp personalizado, SIN computeFrequencyPenalty
+  const ev = {
+    id: uuid(), type:'substance',
+    timestamp: ts,
+    date: todayDateStr(),
+    dayId: state.runtime.dayId,
+    location: state.runtime.currentLocation.name,
+    configVersionUsed: state.config.versions.length,
+    baselineVersionUsed: state.baselineVersions.length - 1,
+    payload: {substance: sub.key, quickContext:'manual', intensity:null, manual:true},
+    tags: ['manual'],
+    scores: {xp:0,xpBonus:0,xpPenalty:0,load:0,recoveryImpact:0,dopamineImpact:0,toleranceGain:0,constructionGain:0},
+    feedback: {liked:null, helpedScore:null, note:''}
+  };
+  computeScores(ev); // calcula XP/load pero no frecuency penalty (ya pasó)
+  delete ev._impactMessage; // sin tarjeta de impacto para registros manuales
+  state.runtime.lastImpactMessage = null;
+  state.events.push(ev);
+  // re-ordenar eventos por timestamp (el manual puede ser anterior)
+  state.events.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  updateCacheIncremental(ev);
+  save();
+  closeOverlay('overlay-sheet');
+  renderAll();
+  showToast(`${sub.emoji} ${sub.name} registrado (${timeVal||'ahora'}) ✓`);
+}
+
 function openSubstanceFlow(){
   state.runtime.flow = {type:'substance', step:1, data:{}};
   document.getElementById('sheet-title').textContent = 'Registré algo';
@@ -2946,6 +3278,26 @@ function selectQuickContext(ctx){
 
 function finishSubstanceFlow(){
   closeOverlay('overlay-sheet');
+  // mostrar conversación post-registro para la sustancia
+  const d = state.runtime.flow?.data;
+  if(d?.eventId){
+    const ev = state.events.find(e=>e.id===d.eventId);
+    if(ev){
+      const conv = generatePostRegisterConversation(ev);
+      if(conv && conv.type==='pattern'){
+        // solo mostrar carta si hay un patrón real (no el generativo, ese ya sale como toast)
+        const sub = SUBSTANCES.find(s=>s.key===ev.payload.substance);
+        showCarta({
+          icon: sub?.emoji||'🧩',
+          title: (sub?.name||'Sustancia')+' registrado',
+          text: conv.text,
+          headerTitle: 'Patrón detectado'
+        });
+        renderAll();
+        return;
+      }
+    }
+  }
   renderAll();
 }
 
@@ -3094,9 +3446,64 @@ function renderInnerStep4(){
   `;
 }
 
+const VECTOR_OPTIONS = [
+  {key:'presente_real', label:'Presente real', emoji:'🟢', desc:'Aquí y ahora, lo que es real'},
+  {key:'futuro_real', label:'Futuro real', emoji:'🔵', desc:'Algo que puede pasar'},
+  {key:'futuro_imaginario', label:'Futuro imaginario', emoji:'🌫️', desc:'Catástrofe inventada'},
+  {key:'pasado', label:'Pasado', emoji:'⏮️', desc:'Algo que ya ocurrió'},
+  {key:'fantasia', label:'Fantasía', emoji:'✨', desc:'Evasión, escenario ideal'},
+  {key:'rumiacion', label:'Rumiación', emoji:'🔁', desc:'Loop mental sin salida'}
+];
+
 function selectNeed(need){
   state.runtime.flow.data.need = need;
+  // después de necesidad → Vector (opcional)
+  renderVectorStep();
+}
+
+function renderVectorStep(){
+  const body = document.getElementById('sheet-body');
+  body.innerHTML = `
+    <div class="card-sub">¿Hacia dónde se fue tu mente? <span style="color:var(--text2); font-weight:400;">(opcional)</span></div>
+    <div class="choice-grid">
+      ${VECTOR_OPTIONS.map((v,i)=>`<button class="choice" onclick="selectVector(${i})" style="flex-direction:column; text-align:center; gap:2px;">
+        <span style="font-size:20px;">${v.emoji}</span>
+        <span style="font-size:12px; font-weight:700;">${v.label}</span>
+        <span style="font-size:10px; color:var(--text2);">${v.desc}</span>
+      </button>`).join('')}
+    </div>
+    <button class="btn outline mt8" onclick="selectVector(null)">Saltar</button>
+  `;
+}
+
+function selectVector(idx){
+  const v = idx!==null ? VECTOR_OPTIONS[idx] : null;
+  state.runtime.flow.data.vector = v ? v.key : null;
   saveInnerEvent();
+}
+
+function saveInnerEvent(){
+  const flow = state.runtime.flow;
+  const d = flow.data;
+  const inferredEnemy = mapEmotionToEnemy(d.emotion);
+  const internalCharacter = d.sentence ? inferInternalCharacter(d.emotion, d.sentence) : null;
+
+  const ev = addEvent('inner_event', {
+    emotion: d.emotion,
+    emotionGroup: d.emotionGroup,
+    intensity: d.intensity,
+    sentence: d.sentence || null,
+    need: d.need || null,
+    vector: d.vector || null,
+    identityTag: d.identityTag || null,
+    inferredEnemy: inferredEnemy,
+    inferredVector: d.vector || d.emotionGroup,
+    internalCharacter: internalCharacter
+  }, []);
+
+  checkRewardMilestones();
+  maybeOfferExcavation(d.emotion);
+  showInnerConclusionCard(ev);
 }
 
 function inferInternalCharacter(emotion, sentence){
@@ -3121,50 +3528,82 @@ function inferInternalCharacter(emotion, sentence){
   return 'Actual';
 }
 
-function saveInnerEvent(){
-  const flow = state.runtime.flow;
-  const d = flow.data;
-  const inferredEnemy = mapEmotionToEnemy(d.emotion);
-  const internalCharacter = d.sentence ? inferInternalCharacter(d.emotion, d.sentence) : null;
-
-  const ev = addEvent('inner_event', {
-    emotion: d.emotion,
-    emotionGroup: d.emotionGroup,
-    intensity: d.intensity,
-    sentence: d.sentence || null,
-    need: d.need || null,
-    inferredEnemy: inferredEnemy,
-    inferredVector: d.emotionGroup,
-    internalCharacter: internalCharacter
-  }, []);
-
-  checkRewardMilestones();
-  maybeOfferExcavation(d.emotion);
-  showInnerConclusionCard(ev);
-}
-
 function showInnerConclusionCard(ev){
   closeOverlay('overlay-sheet');
   const emo = ev.payload.emotion;
+
+  // conversación post-registro (basada en patrones reales)
+  const conversation = generatePostRegisterConversation(ev);
+  const conversationText = conversation ? conversation.text : null;
+  const showIdentityTag = conversation ? conversation.showIdentityTag : false;
+
+  // texto de conclusión (rotativo por emoción)
   const interventions = state.content.interventions.inner_event[emo] || {conclusionTemplates:['Quedó registrado.']};
-  const text = pickRotating(interventions.conclusionTemplates, 'concl_'+emo);
+  const conclusionText = pickRotating(interventions.conclusionTemplates, 'concl_'+emo);
 
-  const findings = generateFindings();
-  const extra = findings.length ? findings[Math.floor(Math.random()*findings.length)] : '';
-
+  // el texto principal: conclusión propia de la emoción
+  // el extra: conversación basada en datos reales (patrón o generativa)
   showCarta({
     icon: emotionIcon(emo),
     title: emo+' · Intensidad '+ev.payload.intensity,
-    text: text,
-    extra: extra ? 'Hallazgo: '+extra : '',
+    text: conclusionText,
+    extra: conversationText || '',
     headerTitle: 'Carta Hallazgo',
     onLike: `cardFeedback('${ev.id}', true)`,
     onDislike: `cardFeedback('${ev.id}', false)`,
     onAnother: `reshowInnerConclusion('${ev.id}')`,
     onTrain: shouldOfferTraining(emo) ? `closeOverlay('overlay-carta'); goScreen('training'); startTraining('${emotionToTrainingTarget(emo)}')` : null
   });
+
+  // etiqueta de identidad: si la emoción es excavable, preguntar opcionalmente después de cerrar la carta
+  if(showIdentityTag){
+    state.runtime._pendingIdentityEventId = ev.id;
+  } else {
+    state.runtime._pendingIdentityEventId = null;
+  }
+
   renderAll();
 }
+
+/* Mostrar la pregunta de identidad opcional (Niño/Adolescente/Adulto joven/Adulto protector/Actual) */
+function maybeShowIdentityTag(){
+  const eventId = state.runtime._pendingIdentityEventId;
+  if(!eventId) return;
+  state.runtime._pendingIdentityEventId = null;
+
+  const body = document.getElementById('carta-body');
+  if(!body) return;
+
+  body.innerHTML += `
+    <div class="identity-tag-block">
+      <div class="card-sub" style="margin-top:14px; font-size:13px; color:var(--text2);">¿Quién reaccionó? (opcional)</div>
+      <div class="identity-tag-row">
+        <button onclick="saveIdentityTag('${eventId}','niño')">👦 Niño</button>
+        <button onclick="saveIdentityTag('${eventId}','adolescente')">🧑 Adolescente</button>
+        <button onclick="saveIdentityTag('${eventId}','adulto_joven')">🧔 Adulto joven</button>
+        <button onclick="saveIdentityTag('${eventId}','adulto_protector')">👨 Adulto protector</button>
+        <button onclick="saveIdentityTag('${eventId}','yo_actual')">🧠 Yo actual</button>
+        <button onclick="clearIdentityTagUI()" style="color:var(--text2);">Saltar</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveIdentityTag(eventId, tag){
+  const ev = state.events.find(e=>e.id===eventId);
+  if(ev){
+    ev.payload.identityTag = tag;
+    save();
+  }
+  clearIdentityTagUI();
+  showToast('Guardado ✓');
+}
+
+function clearIdentityTagUI(){
+  const block = document.querySelector('.identity-tag-block');
+  if(block) block.remove();
+}
+
 
 function reshowInnerConclusion(eventId){
   const ev = state.events.find(e=>e.id===eventId);
@@ -4295,6 +4734,7 @@ function renderAnalysis(){
   renderAnalysisSubstanceHour();
   renderAnalysisExercise();
   renderAnalysisAlcoholExercise();
+  renderAnalysisVector();
 }
 
 function renderAnalysisGoodBad(){
@@ -4413,6 +4853,77 @@ function renderAnalysisAlcoholExercise(){
     <div class="card-sub mb0 mt8" style="font-weight:700; font-size:18px;">Balance estimado: ${balance>=0?'+':''}${balance} kcal</div>
     <div class="small muted mt8">Estimación aproximada según las kcal configuradas en Configuración. No es un cálculo médico preciso.</div>
   `;
+}
+
+/* ---------- Análisis automático de Vector ---------- */
+function renderAnalysisVector(){
+  const el = document.getElementById('analysis-vector');
+  if(!el) return;
+
+  const withVector = state.events.filter(e=>e.type==='inner_event' && e.payload.vector);
+  if(withVector.length < 3){
+    el.innerHTML = `<div class="card-sub mb0">Registra al menos 3 emociones con Vector para ver patrones. Vector aparece como paso opcional al registrar una emoción.</div>`;
+    return;
+  }
+
+  // distribución de vectores
+  const vCounts = {};
+  for(const e of withVector) vCounts[e.payload.vector]=(vCounts[e.payload.vector]||0)+1;
+  const total = withVector.length;
+  const sorted = Object.entries(vCounts).sort((a,b)=>b[1]-a[1]);
+  const topVector = sorted[0];
+
+  // ¿qué emoción se asocia más con el vector dominante?
+  const topEmoWithTopV = withVector.filter(e=>e.payload.vector===topVector[0]);
+  const emoCounts = {};
+  for(const e of topEmoWithTopV) emoCounts[e.payload.emotion]=(emoCounts[e.payload.emotion]||0)+1;
+  const topEmo = Object.entries(emoCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  // ¿cuántos terminaron en sustancia (dentro de 30 min)?
+  let toSubstance = 0;
+  for(const e of topEmoWithTopV){
+    const t0 = new Date(e.timestamp).getTime();
+    const hasSub = state.events.some(s=>s.type==='substance' && new Date(s.timestamp).getTime()>t0 && new Date(s.timestamp).getTime()<=t0+30*60*1000);
+    if(hasSub) toSubstance++;
+  }
+  const pctToSub = topEmoWithTopV.length>0 ? Math.round(toSubstance/topEmoWithTopV.length*100) : 0;
+
+  // sentencia más frecuente con ese vector
+  const sentences = withVector.filter(e=>e.payload.vector===topVector[0] && e.payload.sentence).map(e=>e.payload.sentence);
+  const sentCounts = {};
+  for(const s of sentences) sentCounts[s]=(sentCounts[s]||0)+1;
+  const topSentence = Object.entries(sentCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  // labels de vectores
+  const VLABELS = {presente_real:'Presente real 🟢', futuro_real:'Futuro real 🔵', futuro_imaginario:'Futuro imaginario 🌫️', pasado:'Pasado ⏮️', fantasia:'Fantasía ✨', rumiacion:'Rumiación 🔁'};
+
+  let html = `<div class="section-label" style="padding:0 0 8px 0;">Distribución de Vector (${total} registros)</div>`;
+  for(const [k,v] of sorted){
+    const pct = Math.round(v/total*100);
+    html += `<div class="bar-row"><div class="bar-head"><span>${VLABELS[k]||k}</span><span>${pct}% (${v})</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:var(--blue);"></div></div></div>`;
+  }
+
+  html += `<div class="card tight mt14" style="background:var(--purple-bg);">
+    <div class="card-title" style="font-size:14px;">Patrón detectado</div>
+    <div class="card-sub mb0">Tu mente va mayormente a <b>${VLABELS[topVector[0]]||topVector[0]}</b> (${Math.round(topVector[1]/total*100)}% de las veces).</div>
+    ${topEmo ? `<div class="card-sub mb0 mt8">La emoción más frecuente en ese vector: <b>${topEmo[0]}</b> (${topEmo[1]} veces).</div>` : ''}
+    ${topSentence ? `<div class="card-sub mb0 mt8">Sentencia dominante: <b>"${topSentence[0]}"</b></div>` : ''}
+    ${topEmoWithTopV.length >= 3 ? `<div class="card-sub mb0 mt8">${pctToSub}% de esos episodios terminaron en consumo en los siguientes 30 min.</div>` : ''}
+  </div>`;
+
+  // identidad: si hay datos
+  const withIdentity = state.events.filter(e=>e.type==='inner_event' && e.payload.identityTag);
+  if(withIdentity.length >= 3){
+    const iCounts = {};
+    for(const e of withIdentity) iCounts[e.payload.identityTag]=(iCounts[e.payload.identityTag]||0)+1;
+    const ILABELS = {niño:'👦 Niño', adolescente:'🧑 Adolescente', adulto_joven:'🧔 Adulto joven', adulto_protector:'👨 Adulto protector', yo_actual:'🧠 Yo actual'};
+    const topI = Object.entries(iCounts).sort((a,b)=>b[1]-a[1])[0];
+    html += `<div class="card tight mt10" style="background:var(--amber-bg);">
+      <div class="card-sub mb0">Identidad que más reacciona: <b>${ILABELS[topI[0]]||topI[0]}</b> (${Math.round(topI[1]/withIdentity.length*100)}% de los episodios).</div>
+    </div>`;
+  }
+
+  el.innerHTML = html;
 }
 </script>
 <script>
@@ -4836,21 +5347,42 @@ async function copyExport(format){
 function downloadExport(format){
   const text = format==='json' ? buildExportJSON() : buildSummaryText();
   if(format==='json') addEventSilent('recalibration', {action:'export'});
-  const ext = format==='json' ? 'json' : 'txt';
-  const mime = format==='json' ? 'application/json' : 'text/plain';
-  try{
-    const blob = new Blob([text], {type:mime});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ThriveArena_${todayDateStr()}.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Descarga iniciada ⬇️');
-  }catch(e){
-    showCopyFallbackCard(text);
+  const label = format==='json' ? 'Respaldo JSON' : 'Resumen TXT';
+
+  // Mostrar pantalla con el texto completo para copiar/abrir en Notas
+  document.getElementById('detail-header-title').textContent = label;
+  const body = document.getElementById('detail-body');
+  body.innerHTML = `
+    <div class="card-sub mb0">Texto listo. Toca para seleccionar todo y luego copia.</div>
+    <textarea id="export-textarea" readonly rows="14" style="margin-top:10px; font-size:12px; width:100%; box-sizing:border-box;" onclick="this.select(); this.setSelectionRange(0,99999);">${text.replace(/</g,'&lt;')}</textarea>
+    <div class="btn-row mt8">
+      <button class="btn" onclick="document.getElementById('export-textarea').select(); document.getElementById('export-textarea').setSelectionRange(0,99999); document.execCommand('copy'); showToast('Copiado ✓');">📋 Copiar todo</button>
+      <button class="btn outline" onclick="openInNotes()">📓 Abrir en Notas</button>
+    </div>
+    <div class="small muted mt8">Toca "Abrir en Notas", pega el texto y guarda la nota.</div>
+  `;
+  // guardar el texto para openInNotes
+  window._exportText = text;
+  openOverlay('overlay-detail');
+}
+
+function openInNotes(){
+  const text = window._exportText || '';
+  // Usar el esquema URL de Notas de iOS para abrir la app directamente
+  const encoded = encodeURIComponent(text);
+  // Intento 1: esquema notes:// (abre Notas pero sin contenido en versiones modernas)
+  // Intento 2: navigator.share como texto (abre hoja compartir donde puede elegir Notas)
+  if(navigator.share){
+    navigator.share({title:'Thrive Arena Export', text:text}).catch(()=>{});
+  } else {
+    // fallback: copiar automáticamente y avisar
+    try{
+      const ta = document.createElement('textarea');
+      ta.value=text; ta.style.position='fixed'; ta.style.top='-9999px';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,ta.value.length);
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('Copiado. Ábrelo en Notas y pega.');
+    }catch(e){ showToast('Copia el texto manualmente'); }
   }
 }
 
@@ -5126,15 +5658,39 @@ function openWake(){
   if(state.runtime.dayOpen){
     body.innerHTML = `
       <div class="card-sub">El día ya está abierto. ¿Quieres registrar el despertar de todas formas?</div>
-      <button class="btn mt8" onclick="renderWakeStep1()">Registrar despertar</button>
+      <button class="btn mt8" onclick="renderWakeStep0()">Registrar despertar</button>
       <button class="btn outline mt8" onclick="closeOverlay('overlay-wake')">Cancelar</button>
     `;
     openOverlay('overlay-wake');
     return;
   }
   state.runtime.wakeData = {};
-  renderWakeStep1();
+  renderWakeStep0();
   openOverlay('overlay-wake');
+}
+
+function renderWakeStep0(){
+  // hora real de despertar (por si ya pasaron horas)
+  const now = new Date();
+  const defaultH = String(now.getHours()).padStart(2,'0');
+  const defaultM = String(now.getMinutes()).padStart(2,'0');
+  const body = document.getElementById('wake-body');
+  body.innerHTML = `
+    <div class="card-sub">¿A qué hora te despertaste?</div>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">
+      <input type="time" id="wake-time-input" value="${defaultH}:${defaultM}"
+        style="font-size:22px; font-weight:700; border:none; background:var(--surface2); border-radius:12px; padding:10px 16px; color:var(--text); flex:1;">
+    </div>
+    <button class="btn" onclick="setWakeTime()">Continuar →</button>
+    <button class="btn outline mt8" onclick="setWakeTime()">Ahora mismo (${defaultH}:${defaultM})</button>
+  `;
+}
+function setWakeTime(){
+  const input = document.getElementById('wake-time-input');
+  const val = input?.value || '';
+  state.runtime.wakeData = state.runtime.wakeData || {};
+  state.runtime.wakeData.wakeTime = val; // "HH:MM"
+  renderWakeStep1();
 }
 
 function renderWakeStep1(){
@@ -5202,7 +5758,8 @@ function confirmWake(){
     sleepQuality: d.sleepQuality||null,
     morningFeeling: d.morningFeeling||null,
     libido: d.libido||null,
-    sleepHours: sleepHours
+    sleepHours: sleepHours,
+    wakeTime: d.wakeTime||null
   }, []);
   state.runtime.dayOpen = true;
   state.runtime.wakeData = {};
